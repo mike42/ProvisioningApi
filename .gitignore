@@ -1,0 +1,4 @@
+.settings/*
+.git/*
+.buildpath
+.project

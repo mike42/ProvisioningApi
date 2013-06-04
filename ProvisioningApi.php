@@ -84,7 +84,7 @@ class ProvisioningApi {
 		
 		/* This data is needed for Ou stuff, but it is mainly to verify the login has API access */
 		try {
-			print_r($this -> retrieveCustomerId());
+			$this -> retrieveCustomerId();
 		} catch(Exception $e) {
 			throw new Exception("Error retrieving customerId. Is this a google apps administrator on a domain with API access enabled?\n".$e -> getMessage);
 		}
@@ -108,21 +108,34 @@ class ProvisioningApi {
 	 * @param string $hashFunction
 	 * @param string $isAdmin
 	 */
-	public function createUser($userEmail, $firstName, $lastName, $password, $hashFunction = "SHA-1", $isAdmin = false) {
+	public function createUser($userEmail, $firstName, $lastName, $password, $hashFunction = "SHA-1", $isAdmin = false, $isSuspended = false) {
 		/* Break up the email address */
 		$pe = new Provisioning_Email($userEmail);
-		$du = new Provisioning_DomainUser($userEmail, $firstName, $lastName, $password, $hashFunction, $isAdmin);
+		
+		/* Figure out XML user creation code */
+		$du = new Provisioning_DomainUser($userEmail, $firstName, $lastName, $password, $hashFunction, $isAdmin, $isSuspended);
 		$xml = $du -> createXML();
-		echo $xml;
+		
+		/* Create user and return user details */
 		$dom = $this -> post_xml_feed("user/2.0/".urlencode($pe -> domain), $xml);
 		$properties = $this -> get_properties($dom);
-		return new Provisioning_DomainUser($properties -> userEmail, $properties -> firstName, $properties -> lastName, $properties -> password, $properties -> hashFunction, $properties -> isAdmin);
+		return new Provisioning_DomainUser($properties -> userEmail, $properties -> firstName, $properties -> lastName, $properties -> password, $properties -> hashFunction, $properties -> isAdmin == 'true', $properties -> isSuspended == 'true');
 	}
 	
+	/**
+	 * Retrieve a single user account
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_users
+	 * 
+	 * @param string $userEmail
+	 * @throws Exception
+	 */
 	public function retrieveUser($userEmail) {
-		throw new Exception("Unimplemented");
+		$pe = new Provisioning_Email($userEmail);
+		$dom = $this -> get_xml_feed("user/2.0/".urlencode($pe -> domain)."/".urlencode($pe -> address));
+		$properties = $this -> get_properties($dom);
+		return new Provisioning_DomainUser($properties -> userEmail, $properties -> firstName, $properties -> lastName, "", "", $properties -> isAdmin == 'true', $properties -> isSuspended == 'true');
 	}
-	
+
 	/**
 	 * Retrieve the customer ID - needed for organizationalUnit operations
 	 * https://developers.google.com/google-apps/provisioning/#retrieving_a_customerid

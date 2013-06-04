@@ -11,6 +11,7 @@ class Provisioning_DomainUser {
 	private $password;
 	private $hashFunction;
 	private $isAdmin;
+	private $isSuspended;
 	
 	/**
 	 * Initialise with given parameters
@@ -22,14 +23,15 @@ class Provisioning_DomainUser {
 	 * @param string $hashFunction Function used to hash the password
 	 * @param boolean $isAdmin True if this is an admin account
 	 */
-	public function __construct($userEmail, $firstName, $lastName, $password, $hashFunction = "SHA-1", $isAdmin = false) {
+	public function __construct($userEmail, $firstName, $lastName, $password, $hashFunction = "SHA-1", $isAdmin = false, $isSuspended = false) {
 		/* Set variables */
 		$this -> userEmail = $userEmail;
 		$this -> firstName = $firstName;
 		$this -> lastName = $lastName;
 		$this -> password = $password;
 		$this -> hashFunction = $hashFunction;
-		$this -> isAdmin = $isAdmin;
+		$this -> isAdmin = (boolean)$isAdmin;
+		$this -> isSuspended = (boolean)$isSuspended;
 	}
 	
 	/**
@@ -44,7 +46,8 @@ class Provisioning_DomainUser {
 			"<apps:property name=\"userEmail\" value=\"".ProvisioningApi::escapeXML_Attr($this -> userEmail)."\"/>\n" .
 			"<apps:property name=\"firstName\" value=\"".ProvisioningApi::escapeXML_Attr($this -> firstName)."\"/>\n" .
 			"<apps:property name=\"lastName\" value=\"".ProvisioningApi::escapeXML_Attr($this -> lastName)."\"/>\n" .
-			"<apps:property name=\"isAdmin\" value=\"" . ($this -> isAdmin ? 'true' : 'false') . "\"/>\n" .
+			"<apps:property name=\"isAdmin\" value=\"" . ($this -> isAdmin == true ? 'true' : 'false') . "\"/>\n" .
+			"<apps:property name=\"isSuspended\" value=\"" . ($this -> isSuspended == true ? 'true' : 'false') . "\"/>\n" .
 			"</atom:entry>";
 	}
 	

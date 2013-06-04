@@ -136,6 +136,25 @@ class ProvisioningApi {
 		return new Provisioning_DomainUser($properties -> userEmail, $properties -> firstName, $properties -> lastName, "", "", $properties -> isAdmin == 'true', $properties -> isSuspended == 'true');
 	}
 	
+
+	/**
+	 * Rename this user account to another address
+	 * https://developers.google.com/google-apps/provisioning/#renaming_a_users_account
+	 * 
+	 * @param string $userEmail
+	 * @param string $newEmail
+	 * @return boolean True on success
+	 */
+	public function renameUser($userEmail, $newEmail) {
+		$pe = new Provisioning_Email($userEmail);
+		$xml = "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom'\n" .
+				"xmlns:apps='http://schemas.google.com/apps/2006'>\n" .
+				"<apps:property name=\"newEmail\" value=\"" . self::escapeXML_Attr($newEmail) . "\" />\n" .
+				"</atom:entry>\n";
+		$dom = $this -> put_xml_feed("user/userEmail/2.0/".urlencode($pe -> domain)."/".urlencode($pe -> address), $xml);
+		return true;
+	}
+	
 	/**
 	 * Delete a user account from the domain
 	 * https://developers.google.com/google-apps/provisioning/#deleting_a_user_from_a_domain
@@ -148,6 +167,18 @@ class ProvisioningApi {
 		return true;
 	}
 
+	public function updateUser(Provisioning_DomainUser $user) {
+		/* Break up the email address */
+		$pe = new Provisioning_Email($user -> getuserEmail());
+	
+		/* Figure out XML user creation code */
+		$xml = $user -> modifyXML();
+	
+		/* Modify and return user details */
+		$dom = $this -> put_xml_feed("user/2.0/".urlencode($pe -> domain)."/".urlencode($pe -> address), $xml);
+		return $user; // Easier than looking for changes in the result
+	}
+	
 	/**
 	 * Retrieve the customer ID - needed for organizationalUnit operations
 	 * https://developers.google.com/google-apps/provisioning/#retrieving_a_customerid
@@ -272,6 +303,27 @@ class ProvisioningApi {
 				return $this -> process_feed($responseTxt);
 			default:
 				throw new Exception("HTTP ".$info['http_code']." getting from ". $url);
+		}
+	}
+	
+	private function put_xml_feed($feed, $xml) {
+		$url = $this -> base . $feed;
+		curl_setopt($this -> ch, CURLOPT_URL, $this -> base.$feed);
+		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this -> ch, CURLOPT_HTTPHEADER, array('Content-type: application/atom+xml', 'Authorization: GoogleLogin auth="'.trim($this -> token).'"'));
+		curl_setopt($this -> ch, CURLOPT_POSTFIELDS, $xml);
+	
+		$responseTxt = curl_exec($this -> ch);
+		$info = curl_getinfo($this -> ch);
+		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "GET"); // Reset
+	
+		switch($info['http_code']) {
+			case '200':
+			case '201':
+				return $this -> process_feed($responseTxt);
+			default:
+				throw new Exception("HTTP ".$info['http_code']." posting to ". $url);
 		}
 	}
 	

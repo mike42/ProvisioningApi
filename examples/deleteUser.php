@@ -21,7 +21,6 @@ try {
 	$prov -> deleteUser($userEmail);
 	echo "User deleted. Trying to retrieve it to show that it's gone..\n";
 	$user = $prov -> retrieveUser($userEmail);
-	print_r($user);
 } catch(Exception $e) {
 	die("Error: " . $e -> getMessage()."\n");
 }

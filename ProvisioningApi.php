@@ -86,7 +86,7 @@ class ProvisioningApi {
 		try {
 			$this -> retrieveCustomerId();
 		} catch(Exception $e) {
-			throw new Exception("Error retrieving customerId. Is this a google apps administrator on a domain with API access enabled?\n".$e -> getMessage);
+			throw new Exception("Error retrieving customerId. Is this a google apps administrator on a domain with API access enabled?\n".$e -> getMessage());
 		}
 	}
 
@@ -135,6 +135,18 @@ class ProvisioningApi {
 		$properties = $this -> get_properties($dom);
 		return new Provisioning_DomainUser($properties -> userEmail, $properties -> firstName, $properties -> lastName, "", "", $properties -> isAdmin == 'true', $properties -> isSuspended == 'true');
 	}
+	
+	/**
+	 * Delete a user account from the domain
+	 * https://developers.google.com/google-apps/provisioning/#deleting_a_user_from_a_domain
+	 * 
+	 * @param string $userEmail
+	 */
+	public function deleteUser($userEmail) {
+		$pe = new Provisioning_Email($userEmail);
+		$dom = $this -> delete_feed("user/2.0/".urlencode($pe -> domain)."/".urlencode($pe -> address));
+		return true;
+	}
 
 	/**
 	 * Retrieve the customer ID - needed for organizationalUnit operations
@@ -170,6 +182,7 @@ class ProvisioningApi {
 		curl_setopt($this -> ch, CURLOPT_POSTFIELDS, $account);
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
+		curl_setopt($this -> ch, CURLOPT_POST, false); // Reset
 	
 		/* Parse response */
 		$responseLines = split('=', $responseTxt);
@@ -229,7 +242,7 @@ class ProvisioningApi {
 		
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
-		
+
 		switch($info['http_code']) {
 			case '200':
 			case '201':
@@ -247,9 +260,9 @@ class ProvisioningApi {
 	private function get_xml_feed($feed) {
 		$url = $this -> base . $feed;
 		curl_setopt($this -> ch, CURLOPT_URL, $url);
-		curl_setopt($this -> ch, CURLOPT_POST, false);
 		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this -> ch, CURLOPT_HTTPHEADER, array('Authorization: GoogleLogin auth="'.trim($this -> token).'"'));
+		curl_setopt($this -> ch, CURLOPT_POST, false); // Reset
 		
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
@@ -257,6 +270,25 @@ class ProvisioningApi {
 		switch($info['http_code']) {
 			case '200':
 				return $this -> process_feed($responseTxt);
+			default:
+				throw new Exception("HTTP ".$info['http_code']." getting from ". $url);
+		}
+	}
+	
+	private function delete_feed($feed) {
+		$url = $this -> base . $feed;
+		curl_setopt($this -> ch, CURLOPT_URL, $url);
+		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this -> ch, CURLOPT_HTTPHEADER, array('Authorization: GoogleLogin auth="'.trim($this -> token).'"'));
+		
+		$responseTxt = curl_exec($this -> ch);
+		$info = curl_getinfo($this -> ch);
+		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "GET"); // Reset
+
+		switch($info['http_code']) {
+			case '200':
+				return true;
 			default:
 				throw new Exception("HTTP ".$info['http_code']." getting from ". $url);
 		}

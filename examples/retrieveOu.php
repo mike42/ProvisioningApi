@@ -5,7 +5,7 @@
 require_once("../ProvisioningApi.php");
 
 if(count($argv) < 4) {
-	die("Usage: ". $argv[0] . " orgUnitPath\n");
+	die("Usage: ". $argv[0] . " admin@example.com password orgUnitPath\n");
 }
 
 /* Admin */

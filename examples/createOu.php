@@ -4,8 +4,8 @@
 
 require_once("../ProvisioningApi.php");
 
-if(count($argv) < 5) {
-	die("Usage: ". $argv[0] . " name description parentOrgUnitPath blockInheritance\n");
+if(count($argv) < 7) {
+	die("Usage: ". $argv[0] . " admin@example.com password name description parentOrgUnitPath blockInheritance\n");
 }
 
 /* Admin */

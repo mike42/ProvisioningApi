@@ -18,8 +18,15 @@ $orgUnitPath = $argv[3];
 try {
 	echo "Logging in ...\n";
 	$prov = new ProvisioningApi($username, $adminPassword);
-	$ou = $prov -> retrieveOrganizationUnit($orgUnitPath);
-	print_r($ou);
+	if($orgUnitPath != "") {
+		$ou = $prov -> retrieveOrganizationUnit($orgUnitPath);
+		print_r($ou);
+	}
+
+	$ou_list = 	$prov -> listChildOrganizationUnits($orgUnitPath);
+	echo "Sub organizations:\n";
+	print_r($ou_list);
+
 } catch(Exception $e) {
 	die("Error: " . $e -> getMessage()."\n");
 }

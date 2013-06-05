@@ -229,6 +229,22 @@ class ProvisioningApi {
 	}
 	
 	/**
+	 * Retrieve An Organization Unit's Immediate Sub-Organizations
+	 * 
+	 * @param strign $orgUnitPath
+	 */
+	public function listChildOrganizationUnits($orgUnitPath) {
+		$dom = $this -> get_xml_feed("orgunit/2.0/".urlencode($this -> customerId) . "?get=children&orgUnitPath=" . urlencode($orgUnitPath));
+		$nodelist = $dom -> getElementsByTagName('entry');
+		$ret = array();
+		for($i = 0; $i < $nodelist -> length; $i++) {
+			$properties = $this -> get_properties($nodelist -> item($i));
+			$ret[] = new Provisioning_OrganizationUnit($properties -> name, $properties -> description, $properties -> orgUnitPath, $properties -> parentOrgUnitPath, $properties -> blockInheritance == 'true');
+		}
+		return $ret;
+	}
+	
+	/**
 	 * Update an organization unit
 	 * https://developers.google.com/google-apps/provisioning/#updating_an_organization_unit
 	 * 

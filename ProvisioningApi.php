@@ -2,6 +2,7 @@
 
 require_once(dirname(__FILE__) . "/types/Provisioning_DomainUser.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_OrganizationUnit.php");
+require_once(dirname(__FILE__) . "/types/Provisioning_OrganizationUser.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_Email.php");
 
 /**
@@ -230,18 +231,47 @@ class ProvisioningApi {
 	
 	/**
 	 * Retrieve An Organization Unit's Immediate Sub-Organizations
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_organization_units
 	 * 
 	 * @param strign $orgUnitPath
 	 */
 	public function listChildOrganizationUnits($orgUnitPath) {
-		$dom = $this -> get_xml_feed("orgunit/2.0/".urlencode($this -> customerId) . "?get=children&orgUnitPath=" . urlencode($orgUnitPath));
-		$nodelist = $dom -> getElementsByTagName('entry');
+		$entries = $this -> get_xml_feed_entries_paginated("orgunit/2.0/".urlencode($this -> customerId) . "?get=children&orgUnitPath=" . urlencode($orgUnitPath));
 		$ret = array();
-		for($i = 0; $i < $nodelist -> length; $i++) {
-			$properties = $this -> get_properties($nodelist -> item($i));
+		foreach($entries as $properties) {
 			$ret[] = new Provisioning_OrganizationUnit($properties -> name, $properties -> description, $properties -> orgUnitPath, $properties -> parentOrgUnitPath, $properties -> blockInheritance == 'true');
 		}
 		return $ret;
+	}
+	
+	
+	
+	/**
+	 * Get a list of accounts in an orgUnit.
+	 * Strangely called "Retrieving An Organization Unit's Immediate Sibling Users" in the API.
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_organization_users
+	 * 
+	 * @param string $orgUnitPath
+	 */
+	public function listChildOrganizationUsers($orgUnitPath) {
+		$entries = $this -> get_xml_feed_entries_paginated("orguser/2.0/".urlencode($this -> customerId) . "?get=children&orgUnitPath=" . urlencode($orgUnitPath));
+		$ret = array();
+		foreach($entries as $properties) {
+			$ret[] = new Provisioning_OrganizationUser($properties -> orgUserEmail, $properties -> orgUnitPath);
+		}
+		return $ret;
+	}
+	
+	/**
+	 * Update an OrganizationUser
+	 * https://developers.google.com/google-apps/provisioning/#updating_an_organization_user
+	 * 
+	 * @param Provisioning_OrganizationUser $orgUser
+	 * @return Provisioning_OrganizationUser
+	 */
+	public function updateOrganizationUser(Provisioning_OrganizationUser $orgUser) {
+		throw new Exception("unimplemented");
+		return $orgUser;
 	}
 	
 	/**
@@ -380,6 +410,37 @@ class ProvisioningApi {
 			default:
 				throw new Exception("HTTP ".$info['http_code']." getting from ". $url);
 		}
+	}
+	
+	/**
+	 * Load a feed, grab a list of entries, load the next page, and so on. Return array of objects representing properties of the entries
+	 * 
+	 * @param string $feed
+	 */
+	private function get_xml_feed_entries_paginated($feed) {
+		$ret = array();
+		while($feed != null) {
+			$dom = $this -> get_xml_feed($feed);
+			$nodelist = $dom -> getElementsByTagName('entry');
+			for($i = 0; $i < $nodelist -> length; $i++) {
+				$item = $nodelist -> item($i);
+				$ret[] = $this -> get_properties($item);
+			}
+			
+			/* Get next page */
+			$link = $dom -> getElementsByTagName('link');
+			$feed = null;
+			for($i = 0; $i < $nodelist -> length; $i++) {
+				$item = $link -> item($i);
+				if($item -> attributes -> getNamedItem("rel") -> value == "next") {
+					$feed = $item -> attributes -> getNamedItem("href") -> value;
+					/* Chop off base */
+					$feed = substr($feed, strlen(self::base), strlen($feed) - strlen(self::base));
+				}
+			}
+		}
+		
+		return $ret;
 	}
 	
 	private function put_xml_feed($feed, $xml) {

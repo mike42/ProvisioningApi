@@ -23,9 +23,13 @@ try {
 		print_r($ou);
 	}
 
-	$ou_list = 	$prov -> listChildOrganizationUnits($orgUnitPath);
+	$oUnit_list = 	$prov -> listChildOrganizationUnits($orgUnitPath);
 	echo "Sub organizations:\n";
-	print_r($ou_list);
+	print_r($oUnit_list);
+
+	$oUser_list = 	$prov -> listChildOrganizationUsers($orgUnitPath);
+	echo "User accounts:\n";
+	print_r($oUser_list);
 
 } catch(Exception $e) {
 	die("Error: " . $e -> getMessage()."\n");

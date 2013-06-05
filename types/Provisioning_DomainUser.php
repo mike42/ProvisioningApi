@@ -1,7 +1,7 @@
 <?php
 /**
  * Encapsulate domain user, to track changes, and generate XML to create / modify the user.
- * 
+ *
  * @author Michael Billington <michael.billington@gmail.com>
  */
 class Provisioning_DomainUser {
@@ -12,13 +12,13 @@ class Provisioning_DomainUser {
 	private $hashFunction;
 	private $isAdmin;
 	private $isSuspended;
-	
+
 	/* Track updated fields */
 	private $changes;
-	
+
 	/**
 	 * Initialise with given parameters
-	 * 
+	 *
 	 * @param string $userEmail
 	 * @param string $firstName
 	 * @param string $lastName
@@ -37,37 +37,37 @@ class Provisioning_DomainUser {
 		$this -> isSuspended = (boolean)$isSuspended? 'true' : 'false';
 		$this -> changes = array();
 	}
-	
+
 	/**
 	 * Return XML to create this account
 	 * https://developers.google.com/google-apps/provisioning/#creating_a_user_for_a_domain
 	 */
 	public function createXML() {
 		return "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom'\n" .
-			"xmlns:apps='http://schemas.google.com/apps/2006'>\n" .
-			"<apps:property name=\"password\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> password) . "\"/>\n" .
-			"<apps:property name=\"hashFunction\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> hashFunction) . "\"/>\n" .
-			"<apps:property name=\"userEmail\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> userEmail) . "\"/>\n" .
-			"<apps:property name=\"firstName\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> firstName) . "\"/>\n" .
-			"<apps:property name=\"lastName\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> lastName) . "\"/>\n" .
-			"<apps:property name=\"isAdmin\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> isAdmin) . "\"/>\n" .
-			"<apps:property name=\"isSuspended\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> isSuspended) . "\"/>\n" .
-			"</atom:entry>\n";
+				"xmlns:apps='http://schemas.google.com/apps/2006'>\n" .
+				"<apps:property name=\"password\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> password) . "\"/>\n" .
+				"<apps:property name=\"hashFunction\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> hashFunction) . "\"/>\n" .
+				"<apps:property name=\"userEmail\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> userEmail) . "\"/>\n" .
+				"<apps:property name=\"firstName\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> firstName) . "\"/>\n" .
+				"<apps:property name=\"lastName\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> lastName) . "\"/>\n" .
+				"<apps:property name=\"isAdmin\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> isAdmin) . "\"/>\n" .
+				"<apps:property name=\"isSuspended\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> isSuspended) . "\"/>\n" .
+				"</atom:entry>\n";
 	}
-	
+
 	/**
 	 * Return XML to modify this account
 	 * https://developers.google.com/google-apps/provisioning/#updating_a_domain_users_account
 	 */
 	public function modifyXML() {
 		$str = "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom'\n" .
-			"xmlns:apps='http://schemas.google.com/apps/2006'>\n";
+				"xmlns:apps='http://schemas.google.com/apps/2006'>\n";
 		foreach($this -> changes as $name => $value) {
 			$str .= "<apps:property name=\"" . ProvisioningApi::escapeXML_Attr($name) . "\" value=\"".ProvisioningApi::escapeXML_Attr($value)."\"/>\n";
 		}
 		return $str . "</atom:entry>\n";
 	}
-	
+
 	public function getuserEmail() {
 		return $this -> userEmail;
 	}
@@ -76,7 +76,7 @@ class Provisioning_DomainUser {
 		$this -> firstName = $firstName;
 		$this -> changes['firstName'] = $firstName;
 	}
-	
+
 	public function getfirstName() {
 		return $this -> firstName;
 	}
@@ -85,7 +85,7 @@ class Provisioning_DomainUser {
 		$this -> lastName = $lastName;
 		$this -> changes['lastName'] = $lastName;
 	}
-	
+
 	public function getlastName() {
 		return $this -> lastName;
 	}
@@ -94,7 +94,7 @@ class Provisioning_DomainUser {
 		$this -> password = $password;
 		$this -> changes['password'] = $password;
 	}
-	
+
 	public function getpassword() {
 		return $this -> password;
 	}
@@ -103,7 +103,7 @@ class Provisioning_DomainUser {
 		$this -> hashFunction = $hashFunction;
 		$this -> changes['hashFunction'] = $hashFunction;
 	}
-	
+
 	public function gethashFunction() {
 		return $this -> hashFunction;
 	}
@@ -112,7 +112,7 @@ class Provisioning_DomainUser {
 		$this -> isAdmin = (boolean)$isAdmin? 'true' : 'false';
 		$this -> changes['isAdmin'] = $this -> isAdmin;
 	}
-	
+
 	public function getisAdmin() {
 		return $this -> isAdmin == 'true';
 	}
@@ -121,9 +121,9 @@ class Provisioning_DomainUser {
 		$this -> isSuspended = (boolean)$isSuspended? 'true' : 'false';
 		$this -> changes['isSuspended'] = $this -> isSuspended;
 	}
-	
+
 	public function getisSuspended() {
 		return $this -> isSuspended;
 	}
-	
+
 }

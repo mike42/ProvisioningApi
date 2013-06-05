@@ -1,6 +1,7 @@
 <?php
 
 require_once(dirname(__FILE__) . "/types/Provisioning_DomainUser.php");
+require_once(dirname(__FILE__) . "/types/Provisioning_OrganizationUnit.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_Email.php");
 
 /**
@@ -40,7 +41,7 @@ class ProvisioningApi {
 	/**
 	 * @var string Base URL for API requests.
 	 */
-	private $base;
+	const base ="https://apps-apis.google.com/a/feeds/";
 
 	/**
 	 * Initialise with the given credentials
@@ -56,7 +57,6 @@ class ProvisioningApi {
 
 		$this -> username = $username;
 		$this -> password = $password;
-		$this -> base = "https://apps-apis.google.com/a/feeds/";
 		
 		if(!function_exists('curl_init')) {
 			throw new Exception(__CLASS__ . " requires cURL extension to be loaded.");
@@ -167,6 +167,13 @@ class ProvisioningApi {
 		return true;
 	}
 
+	/**
+	 * Commit changes to a Provisioning_DomainUser object
+	 * https://developers.google.com/google-apps/provisioning/#updating_a_domain_users_account
+	 * 
+	 * @param Provisioning_DomainUser $user
+	 * @return Provisioning_DomainUser
+	 */
 	public function updateUser(Provisioning_DomainUser $user) {
 		/* Break up the email address */
 		$pe = new Provisioning_Email($user -> getuserEmail());
@@ -192,6 +199,39 @@ class ProvisioningApi {
 		return $properties;
 	}
 
+	/**
+	 * Create an organziation unit
+	 * https://developers.google.com/google-apps/provisioning/#creating_an_organization_unit
+	 * 
+	 * @param string $name
+	 * @param string $description
+	 * @param string $parentOrgUnitPath
+	 * @param string $blockInheritance
+	 */
+	public function createOrganizationUnit($name, $description, $parentOrgUnitPath, $blockInheritance = false) {
+		$ou = new Provisioning_OrganizationUnit($name, $description, null, $parentOrgUnitPath, $blockInheritance = false);
+		$xml = $ou -> createXML($this -> customerId);
+		$dom = $this -> post_xml_feed("orgunit/2.0/".urlencode($this -> customerId), $xml);
+		return $ou; // Return data misses some fields
+	}
+	
+	/**
+	 * Retrieve an organization unit
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_organization_units
+	 * 
+	 * @param string $orgUnitPath
+	 * @return Provisioning_OrganizationUnit
+	 */
+	public function retrieveOrganizationUnit($orgUnitPath) {
+		$dom = $this -> get_xml_feed("orgunit/2.0/".urlencode($this -> customerId) . "/" . $orgUnitPath);
+		$properties = $this -> get_properties($dom);
+		return new Provisioning_OrganizationUnit($properties -> name, $properties -> description, $properties -> orgUnitPath, $properties -> parentOrgUnitPath, $properties -> blockInheritance == 'true');
+	}
+	
+	//public function updateOrganizationUnit() {
+
+	//}
+	
 	/**
 	 * Perform a ClientLogin with the values given.
 	 *
@@ -264,8 +304,8 @@ class ProvisioningApi {
 	 * @return DOMElement representing return value
 	 */
 	private function post_xml_feed($feed, $xml) {
-		$url = $this -> base . $feed;
-		curl_setopt($this -> ch, CURLOPT_URL, $this -> base.$feed);
+		$url = self::base . $feed;
+		curl_setopt($this -> ch, CURLOPT_URL, $url);
 		curl_setopt($this -> ch, CURLOPT_POST, true);
 		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this -> ch, CURLOPT_HTTPHEADER, array('Content-type: application/atom+xml', 'Authorization: GoogleLogin auth="'.trim($this -> token).'"'));
@@ -289,7 +329,7 @@ class ProvisioningApi {
 	 * @return DOMElement
 	 */
 	private function get_xml_feed($feed) {
-		$url = $this -> base . $feed;
+		$url = self::base . $feed;
 		curl_setopt($this -> ch, CURLOPT_URL, $url);
 		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this -> ch, CURLOPT_HTTPHEADER, array('Authorization: GoogleLogin auth="'.trim($this -> token).'"'));
@@ -307,8 +347,8 @@ class ProvisioningApi {
 	}
 	
 	private function put_xml_feed($feed, $xml) {
-		$url = $this -> base . $feed;
-		curl_setopt($this -> ch, CURLOPT_URL, $this -> base.$feed);
+		$url = self::base . $feed;
+		curl_setopt($this -> ch, CURLOPT_URL, $url);
 		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "PUT");
 		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this -> ch, CURLOPT_HTTPHEADER, array('Content-type: application/atom+xml', 'Authorization: GoogleLogin auth="'.trim($this -> token).'"'));
@@ -328,7 +368,7 @@ class ProvisioningApi {
 	}
 	
 	private function delete_feed($feed) {
-		$url = $this -> base . $feed;
+		$url = self::base . $feed;
 		curl_setopt($this -> ch, CURLOPT_URL, $url);
 		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "DELETE");
 		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
@@ -349,7 +389,7 @@ class ProvisioningApi {
 	private function process_feed($text) {
 		$xml = simplexml_load_string($text);
 		$dom = dom_import_simplexml($xml);
-		return $dom;		
+		return $dom;
 	}
 	
 	/**
@@ -390,6 +430,15 @@ class ProvisioningApi {
 	 */
 	public static function escapeXML_Attr($value) {
 		return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+	}
+	
+	/**
+	 * Escape XML element content
+	 *
+	 * @param string $value
+	 */
+	public static function escapeXML_ElementContent($value) {
+		return self::escapeXML_Attr($value);
 	}
 }
 

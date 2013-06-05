@@ -228,9 +228,18 @@ class ProvisioningApi {
 		return new Provisioning_OrganizationUnit($properties -> name, $properties -> description, $properties -> orgUnitPath, $properties -> parentOrgUnitPath, $properties -> blockInheritance == 'true');
 	}
 	
-	//public function updateOrganizationUnit() {
-
-	//}
+	/**
+	 * Update an organization unit
+	 * https://developers.google.com/google-apps/provisioning/#updating_an_organization_unit
+	 * 
+	 * @param Provisioning_OrganizationUnit $ou
+	 * @return Provisioning_OrganizationUnit
+	 */
+	public function updateOrganizationUnit(Provisioning_OrganizationUnit $ou) {
+		$xml = $ou -> modifyXML($this -> customerId);
+		$dom = $this -> put_xml_feed("orgunit/2.0/".urlencode($this -> customerId) . "/" . $ou -> getorgUnitPath(), $xml);
+		return $ou;
+	}
 	
 	/**
 	 * Perform a ClientLogin with the values given.

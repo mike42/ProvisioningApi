@@ -18,7 +18,7 @@ $orgUnitPath = $argv[3];
 try {
 	echo "Logging in ...\n";
 	$prov = new ProvisioningApi($username, $adminPassword);
-	if($orgUnitPath != "") {
+	if($orgUnitPath != "/") { // Can't actually retrieve the root organization
 		$ou = $prov -> retrieveOrganizationUnit($orgUnitPath);
 		print_r($ou);
 	}

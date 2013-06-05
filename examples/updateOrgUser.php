@@ -5,7 +5,7 @@
 require_once("../ProvisioningApi.php");
 
 if(count($argv) < 4) {
-	die("Usage: ". $argv[0] . " admin@example.com password joebloggs@example.com\n");
+	die("Usage: ". $argv[0] . " admin@example.com password joebloggs@example.com path/to/orgunit\n");
 }
 
 /* Admin */
@@ -14,15 +14,21 @@ $adminPassword = $argv[2];
 
 /* User details */
 $userEmail = $argv[3];
+$orgUnitPath = $argv[4];
 
 try {
 	echo "Logging in ...\n";
 	$prov = new ProvisioningApi($username, $adminPassword);
-	$user = $prov -> retrieveUser($userEmail);
-	print_r($user);
+	$orgUser = $prov -> retrieveOrganizationUser($userEmail);
+	echo "Before:\n";
+	print_r($orgUser);
 
-	$organizationUser = $prov -> retrieveOrganizationUser($userEmail);
-	print_r($organizationUser);
+	$orgUser -> setorgUnitPath($orgUnitPath);
+	$prov -> updateOrganizationUser($orgUser);
+	
+	
+	echo "After:\n";
+	print_r($orgUser);
 } catch(Exception $e) {
 	die("Error: " . $e -> getMessage()."\n");
 }

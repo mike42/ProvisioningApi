@@ -137,7 +137,6 @@ class ProvisioningApi {
 		return new Provisioning_DomainUser($properties -> userEmail, $properties -> firstName, $properties -> lastName, "", "", $properties -> isAdmin == 'true', $properties -> isSuspended == 'true');
 	}
 	
-
 	/**
 	 * Rename this user account to another address
 	 * https://developers.google.com/google-apps/provisioning/#renaming_a_users_account
@@ -230,6 +229,30 @@ class ProvisioningApi {
 	}
 	
 	/**
+	 * Update an organization unit
+	 * https://developers.google.com/google-apps/provisioning/#updating_an_organization_unit
+	 *
+	 * @param Provisioning_OrganizationUnit $ou
+	 * @return Provisioning_OrganizationUnit
+	 */
+	public function updateOrganizationUnit(Provisioning_OrganizationUnit $ou) {
+		$xml = $ou -> modifyXML($this -> customerId);
+		$dom = $this -> put_xml_feed("orgunit/2.0/".urlencode($this -> customerId) . "/" . $ou -> getorgUnitPath(), $xml);
+		return $ou;
+	}
+	
+	/**
+	 * Delete an organizationUnit
+	 *
+	 * @param string $orgUnitPath
+	 * @return boolean
+	 */
+	public function deleteOrganizationUnit($orgUnitPath) {
+		$this -> delete_feed("orgunit/2.0/".urlencode($this -> customerId) . "/" . $orgUnitPath);
+		return true;
+	}
+	
+	/**
 	 * Retrieve An Organization Unit's Immediate Sub-Organizations
 	 * https://developers.google.com/google-apps/provisioning/#retrieving_organization_units
 	 * 
@@ -242,9 +265,20 @@ class ProvisioningApi {
 			$ret[] = new Provisioning_OrganizationUnit($properties -> name, $properties -> description, $properties -> orgUnitPath, $properties -> parentOrgUnitPath, $properties -> blockInheritance == 'true');
 		}
 		return $ret;
+	}	
+	
+	/**
+	 * Get a single organizationUser by email. Used to find out which organizationUnit they are in,
+	 * all other data should be fetched with retrieveUser().
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_organization_users
+	 * 
+	 * @param string $userEmail
+	 */
+	public function retrieveOrganizationUser($userEmail) {
+		$dom = $this -> get_xml_feed("orguser/2.0/".urlencode($this -> customerId) . "/" . urlencode($userEmail));
+		$properties = $this -> get_properties($dom);
+		return new Provisioning_OrganizationUser($properties -> orgUserEmail, $properties -> orgUnitPath);
 	}
-	
-	
 	
 	/**
 	 * Get a list of accounts in an orgUnit.
@@ -270,32 +304,9 @@ class ProvisioningApi {
 	 * @return Provisioning_OrganizationUser
 	 */
 	public function updateOrganizationUser(Provisioning_OrganizationUser $orgUser) {
-		throw new Exception("unimplemented");
+		$xml = $orgUser -> modifyXML();
+		$dom = $this -> put_xml_feed("orguser/2.0/".urlencode($this -> customerId) . "/" . $orgUser -> getorgUnitPath(), $xml);
 		return $orgUser;
-	}
-	
-	/**
-	 * Update an organization unit
-	 * https://developers.google.com/google-apps/provisioning/#updating_an_organization_unit
-	 * 
-	 * @param Provisioning_OrganizationUnit $ou
-	 * @return Provisioning_OrganizationUnit
-	 */
-	public function updateOrganizationUnit(Provisioning_OrganizationUnit $ou) {
-		$xml = $ou -> modifyXML($this -> customerId);
-		$dom = $this -> put_xml_feed("orgunit/2.0/".urlencode($this -> customerId) . "/" . $ou -> getorgUnitPath(), $xml);
-		return $ou;
-	}
-	
-	/**
-	 * Delete an organizationUnit
-	 * 
-	 * @param string $orgUnitPath
-	 * @return boolean
-	 */
-	public function deleteOrganizationUnit($orgUnitPath) {
-		$this -> delete_feed("orgunit/2.0/".urlencode($this -> customerId) . "/" . $orgUnitPath);
-		return true;
 	}
 
 	/**
@@ -536,6 +547,19 @@ class ProvisioningApi {
 	 */
 	public static function escapeXML_ElementContent($value) {
 		return self::escapeXML_Attr($value);
+	}
+	
+	/**
+	 * Construct a URL-encoded orgUnitPath from a list of orgUnits.
+	 * 
+	 * @param array $units list of organizationUnit names
+	 * @return string representing the organizationUnit path
+	 */
+	public static function constructOrgUnitPath(array $units) {
+		foreach($units as $key => $unit) {
+			$units[$key] = urlencode($unit);
+		}
+		return implode("/" ,$units);
 	}
 }
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env php
 <?php
-/* Example of retrieving an account */
+/* Example of deleting an organizationUnit */
 
 require_once("../ProvisioningApi.php");
 
 if(count($argv) < 4) {
-	die("Usage: ". $argv[0] . " admin@example.com password Joe Bloggs joebloggs@example.com (SHA hash of new user password)\nGenerate the password with:\n\techo -n verysecretpassword | sha1sum\n");
+	die("Usage: ". $argv[0] . " admin@example.com password orgUnitPath\n");
 }
 
 /* Admin */
@@ -13,13 +13,12 @@ $username = $argv[1];
 $adminPassword = $argv[2];
 
 /* User details */
-$userEmail = $argv[3];
+$orgUnitPath = $argv[3];
 
 try {
 	echo "Logging in ...\n";
 	$prov = new ProvisioningApi($username, $adminPassword);
-	$user = $prov -> retrieveUser($userEmail);
-	print_r($user);
+	$prov -> deleteOrganizationUnit($orgUnitPath);
 } catch(Exception $e) {
 	die("Error: " . $e -> getMessage()."\n");
 }

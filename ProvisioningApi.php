@@ -163,7 +163,7 @@ class ProvisioningApi {
 	 */
 	public function deleteUser($userEmail) {
 		$pe = new Provisioning_Email($userEmail);
-		$dom = $this -> delete_feed("user/2.0/".urlencode($pe -> domain)."/".urlencode($pe -> address));
+		$this -> delete_feed("user/2.0/".urlencode($pe -> domain)."/".urlencode($pe -> address));
 		return true;
 	}
 
@@ -241,6 +241,17 @@ class ProvisioningApi {
 		return $ou;
 	}
 	
+	/**
+	 * Delete an organizationUnit
+	 * 
+	 * @param string $orgUnitPath
+	 * @return boolean
+	 */
+	public function deleteOrganizationUnit($orgUnitPath) {
+		$this -> delete_feed("orgunit/2.0/".urlencode($this -> customerId) . "/" . $orgUnitPath);
+		return true;
+	}
+
 	/**
 	 * Perform a ClientLogin with the values given.
 	 *

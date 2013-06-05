@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-/* Example of creating an account */
+/* Example of creating an organizationUnit */
 
 require_once("../ProvisioningApi.php");
 

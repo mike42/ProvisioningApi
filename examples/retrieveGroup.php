@@ -23,6 +23,9 @@ try {
 
 	$members = $prov -> retrieveMembersOfGroup($groupEmail);
 	print_r($members);
+
+	$parents = $prov -> retrieveGroupsOfMember($groupEmail);
+	print_r($parents);
 } catch(Exception $e) {
 	die("Error: " . $e -> getMessage()."\n");
 }

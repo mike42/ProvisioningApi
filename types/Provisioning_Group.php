@@ -87,6 +87,9 @@ class Provisioning_Group {
 	 * @throws Exception if the permission is invalid
 	 */
 	private static function verifyEmailPermission($emailPermission) {
+		if($emailPermission == null) {
+			return;
+		}
 		$permissions = array("Owner", "Member", "Domain", "Anyone");
 		if(!in_array($emailPermission, $permissions, true)) {
 			throw new Exception("Invalid emailPermission $emailPermission. Must be one of " . implode(' ', $permissions));

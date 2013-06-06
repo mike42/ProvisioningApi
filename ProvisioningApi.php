@@ -375,6 +375,52 @@ class ProvisioningApi {
 		return $ret;
 	}
 	
+
+	/**
+	 * Retrieve a list of groups that a user is in.
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_all_groups_for_a_member
+	 * 
+	 * @param string $memberId
+	 * @param boolean $directOnly
+	 * @return multitype:Provisioning_Group 
+	 */
+	public function retrieveGroupsOfMember($memberId, $directOnly = true) {
+		$pe = new Provisioning_Email($memberId);
+		$entries = $this -> get_xml_feed_entries_paginated("group/2.0/" . urlencode($pe -> domain) . "/?member=" . urlencode($pe -> address) . "&directOnly=" . ($directOnly ? 'true' : 'false'));
+		
+		/* Convert to array of groups */
+		$ret = array();
+		foreach($entries as $properties) {
+			print_r($properties);
+			$ret[] = new Provisioning_Group($properties -> groupId, $properties -> groupName, $properties -> description, (isset($properties -> emailPermission) ? $properties -> emailPermission : null), $properties -> permissionPreset);
+		}
+		return $ret;
+	}
+	
+	/**
+	 * Retrieve all groups in a domain -- This actually seems to retrieve every group.
+	 * Uses the domain-part of the admin user's account if none is set.
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_all_groups_in_a_domain
+	 * 
+	 * @param string $domain
+	 * @return multitype:Provisioning_Group 
+	 */
+	public function retrieveAllGroupsInDomain($domain = null) {
+		if($domain == null) {
+			/* No domain set, use the admin's demain */
+			$pe = new Provisioning_Email($this -> username);
+			$domain = $pe -> domain;
+		}
+		
+		$entries = $this -> get_xml_feed_entries_paginated("group/2.0/" . urlencode($domain));
+		$ret = array();
+		foreach($entries as $properties) {
+			print_r($properties);
+			$ret[] = new Provisioning_Group($properties -> groupId, $properties -> groupName, $properties -> description, (isset($properties -> emailPermission) ? $properties -> emailPermission : null), $properties -> permissionPreset);
+		}
+		return $ret;
+	}
+	
 	/**
 	 * Add a member to a group
 	 * https://developers.google.com/google-apps/provisioning/#adding_a_member_to_a_group

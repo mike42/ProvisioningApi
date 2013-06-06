@@ -370,7 +370,7 @@ class ProvisioningApi {
 		$entries = $this -> get_xml_feed_entries_paginated("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($groupEmail) . "/member?includeSuspendedUsers=".($includeSuspendedUsers ? 'true' : 'false'));
 		$ret = array();
 		foreach($entries as $properties) {
-			$ret[] = new Provisioning_GroupMember($properties -> memberType, $properties -> memberId, $properties -> directMember == 'true');
+			$ret[] = new Provisioning_GroupMember($properties -> memberId, $properties -> memberType, $properties -> directMember == 'true');
 		}
 		return $ret;
 	}
@@ -382,16 +382,27 @@ class ProvisioningApi {
 	 * @param string $userEmail
 	 * @param string $groupEmail
 	 */
-	public function addMemberToGroup($userEmail, $groupEmail) {
-		//$pe = new Provisioning_Email($groupEmail);
-		//domain/groupId/member
-		// TODO: addMemberToGroup
-		throw new Exception("Unimplemented");
+	public function addMemberToGroup($memberEmail, $groupEmail) {
+		$pe = new Provisioning_Email($groupEmail);
+		$member = new Provisioning_GroupMember($memberEmail);
+		$xml = $member -> createXML($groupEmail);		
+		$dom = $this -> post_xml_feed("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($groupEmail) . "/member", $xml);
+		// Result of POST is not really useful (just has the input echoed back).
+		return true;
 	}
 	
-	public function removeMemberFromGroup($userEmail, $groupEmail) {
-		// TODO: removeMemberFromGroup
-		throw new Exception("Unimplemented");
+	/**
+	 * Delete a member from a group
+	 * https://developers.google.com/google-apps/provisioning/#deleting_a_member_from_an_group
+	 * 
+	 * @param string $memberEmail
+	 * @param string $groupEmail
+	 * @return boolean
+	 */
+	public function removeMemberFromGroup($memberEmail, $groupEmail) {
+		$pe = new Provisioning_Email($groupEmail);
+		$dom = $this -> delete_feed("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($groupEmail) . "/member/" . urlencode($memberEmail));
+		return true;
 	}
 	
 	/**

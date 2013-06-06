@@ -4,12 +4,23 @@ class Provisioning_GroupMember {
 	private $memberId;
 	private $directMember;
 
-	public function __construct($memberType, $memberId, $directMember = true) {
+	public function __construct($memberId, $memberType = "User", $directMember = true) {
 		self::verifyMemberType($memberType);
 		
 		$this -> memberType = $memberType; 
 		$this -> memberId = $memberId;
 		$this -> directMember = $directMember ? 'true' : 'false';
+	}
+	
+	public function createXML($groupId = null) {
+		if($groupId == null) {
+			throw new Exception("Provisioning_GroupMember::createXML() requires a groupId");
+		}
+		return "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom'\n" .
+				"xmlns:apps='http://schemas.google.com/apps/2006'>\n" .
+				"<apps:property name=\"groupId\" value=\"" . ProvisioningApi::escapeXML_Attr($groupId) . "\" />\n" .
+				"<apps:property name=\"memberId\" value=\"" . ProvisioningApi::escapeXML_Attr($this -> memberId) . "\" />\n" .
+				"</atom:entry>\n";
 	}
 	
 	public function getmemberType() {

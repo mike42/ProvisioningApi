@@ -1,5 +1,4 @@
 <?php
-
 require_once(dirname(__FILE__) . "/types/Provisioning_DomainUser.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_OrganizationUnit.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_OrganizationUser.php");
@@ -13,7 +12,6 @@ require_once(dirname(__FILE__) . "/types/Provisioning_Email.php");
  * @author Michael Billington <michael.billington@gmail.com>
  */
 class ProvisioningApi {
-	
 	/**
 	 * @var string ClientLogin token, sent with each request.
 	 */
@@ -375,7 +373,6 @@ class ProvisioningApi {
 		return $ret;
 	}
 	
-
 	/**
 	 * Retrieve a list of groups that a user is in.
 	 * https://developers.google.com/google-apps/provisioning/#retrieving_all_groups_for_a_member
@@ -609,6 +606,14 @@ class ProvisioningApi {
 		return $ret;
 	}
 	
+	/**
+	 * Issue a PUT request with the given XML to the feed.
+	 * 
+	 * @param string $feed
+	 * @param string $xml
+	 * @throws Exception
+	 * @return DOMElement
+	 */
 	private function put_xml_feed($feed, $xml) {
 		$url = self::base . $feed;
 		curl_setopt($this -> ch, CURLOPT_URL, $url);
@@ -630,6 +635,13 @@ class ProvisioningApi {
 		}
 	}
 	
+	/**
+	 * Issue a DELETE request to the given feed.
+	 * 
+	 * @param unknown_type $feed
+	 * @throws Exception
+	 * @return boolean
+	 */
 	private function delete_feed($feed) {
 		$url = self::base . $feed;
 		curl_setopt($this -> ch, CURLOPT_URL, $url);
@@ -649,6 +661,12 @@ class ProvisioningApi {
 		}
 	}
 	
+	/**
+	 * Turn the text-response of the feed into a DOMElement.
+	 * 
+	 * @param string $text
+	 * @return DOMElement
+	 */
 	private function process_feed($text) {
 		$xml = simplexml_load_string($text);
 		$dom = dom_import_simplexml($xml);
@@ -717,5 +735,4 @@ class ProvisioningApi {
 		return implode("/" ,$units);
 	}
 }
-
 ?>

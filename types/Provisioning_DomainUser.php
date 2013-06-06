@@ -125,5 +125,4 @@ class Provisioning_DomainUser {
 	public function getisSuspended() {
 		return $this -> isSuspended;
 	}
-
 }

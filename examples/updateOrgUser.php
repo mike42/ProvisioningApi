@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-/* Example of retrieving an account */
+/* Example of moving an account to a different orgUnit*/
 
 require_once("../ProvisioningApi.php");
 

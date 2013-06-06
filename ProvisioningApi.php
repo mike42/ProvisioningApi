@@ -3,6 +3,8 @@
 require_once(dirname(__FILE__) . "/types/Provisioning_DomainUser.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_OrganizationUnit.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_OrganizationUser.php");
+require_once(dirname(__FILE__) . "/types/Provisioning_Group.php");
+require_once(dirname(__FILE__) . "/types/Provisioning_GroupMember.php");
 require_once(dirname(__FILE__) . "/types/Provisioning_Email.php");
 
 /**
@@ -27,7 +29,6 @@ class ProvisioningApi {
 	 * @var string Admin password
 	 */
 	private $password;
-	
 	
 	/**
 	 * @var string customerId, as set by retrieveCustomerId()
@@ -294,6 +295,103 @@ class ProvisioningApi {
 			$ret[] = new Provisioning_OrganizationUser($properties -> orgUserEmail, $properties -> orgUnitPath);
 		}
 		return $ret;
+	}
+	
+	/**
+	 * Retrieve a group
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_a_group
+	 *  
+	 * @param string $groupEmail
+	 * @return Provisioning_Group
+	 */
+	public function retrieveGroup($groupEmail) {
+		$pe = new Provisioning_Email($groupEmail);
+		$dom = $this -> get_xml_feed("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($groupEmail));
+		$properties = $this -> get_properties($dom);
+		return new Provisioning_Group($properties -> groupId, $properties -> groupName, $properties -> description, $properties -> emailPermission, $properties -> permissionPreset);
+	}
+	
+	/**
+	 * Update a group's details
+	 * https://developers.google.com/google-apps/provisioning/#updating_a_group
+	 * 
+	 * @param Provisioning_Group $group
+	 * @throws Exception
+	 * @return Provisioning_Group
+	 */
+	public function updateGroup(Provisioning_Group $group) {
+		$pe = new Provisioning_Email($group -> getgroupId());
+		$xml = $group -> modifyXML();
+		$dom = $this -> put_xml_feed("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($pe -> address), $xml);
+		return $group;
+	}
+
+	/**
+	 * Create a new group
+	 * https://developers.google.com/google-apps/provisioning/#creating_a_group
+	 * 
+	 * @param string $groupId
+	 * @param string $groupName
+	 * @param string $description
+	 * @param string $emailPermission
+	 * @param string $permissionPreset
+	 * @return Provisioing_Group
+	 */
+	public function createGroup($groupEmail, $groupName, $description = "", $emailPermission = "Domain", $permissionPreset = "TeamDomain") {
+		$pe = new Provisioning_Email($groupEmail);
+		$group = new Provisioning_Group($groupEmail, $groupName, $description, $emailPermission, $permissionPreset);
+		$xml = $group -> createXML();
+		$dom = $this -> post_xml_feed("group/2.0/".urlencode($pe -> domain), $xml);
+		return $group;
+	}
+	
+	/**
+	 * Delete a group by email address
+	 * https://developers.google.com/google-apps/provisioning/#deleting_a_group
+	 * 
+	 * @param string $groupEmail
+	 * @return boolean
+	 */
+	public function deleteGroup($groupEmail) {
+		$pe = new Provisioning_Email($groupEmail);
+		$this -> delete_feed("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($groupEmail));
+		return true;
+	}
+	
+	/**
+	 * Retrieve all members of a group
+	 * https://developers.google.com/google-apps/provisioning/#retrieving_all_members_of_a_group
+	 * 
+	 * @param string $groupEmail
+
+	 */
+	public function retrieveMembersOfGroup($groupEmail, $includeSuspendedUsers = false) {
+		$pe = new Provisioning_Email($groupEmail);
+		$entries = $this -> get_xml_feed_entries_paginated("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($groupEmail) . "/member?includeSuspendedUsers=".($includeSuspendedUsers ? 'true' : 'false'));
+		$ret = array();
+		foreach($entries as $properties) {
+			$ret[] = new Provisioning_GroupMember($properties -> memberType, $properties -> memberId, $properties -> directMember == 'true');
+		}
+		return $ret;
+	}
+	
+	/**
+	 * Add a member to a group
+	 * https://developers.google.com/google-apps/provisioning/#adding_a_member_to_a_group
+	 * 
+	 * @param string $userEmail
+	 * @param string $groupEmail
+	 */
+	public function addMemberToGroup($userEmail, $groupEmail) {
+		//$pe = new Provisioning_Email($groupEmail);
+		//domain/groupId/member
+		// TODO: addMemberToGroup
+		throw new Exception("Unimplemented");
+	}
+	
+	public function removeMemberFromGroup($userEmail, $groupEmail) {
+		// TODO: removeMemberFromGroup
+		throw new Exception("Unimplemented");
 	}
 	
 	/**

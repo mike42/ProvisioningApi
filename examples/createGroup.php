@@ -22,8 +22,8 @@ $permissionPreset = isset($argv[7]) ? $argv[7] : 'TeamDomain';
 try {
 	echo "Logging in ...\n";
 	$prov = new ProvisioningApi($username, $adminPassword);
-	$user = $prov -> createGroup($groupId, $groupName, $description, $emailPermission, $permissionPreset);
-	print_r($user);
+	$group = $prov -> createGroup($groupId, $groupName, $description, $emailPermission, $permissionPreset);
+	print_r($group);
 } catch(Exception $e) {
 	die("Error: " . $e -> getMessage()."\n");
 }

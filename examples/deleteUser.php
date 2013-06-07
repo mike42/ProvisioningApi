@@ -5,7 +5,7 @@
 require_once("../ProvisioningApi.php");
 
 if(count($argv) < 4) {
-	die("Usage: ". $argv[0] . " admin@example.com password Joe Bloggs joebloggs@example.com (SHA hash of new user password)\nGenerate the password with:\n\techo -n verysecretpassword | sha1sum\n");
+	die("Usage: ". $argv[0] . " admin@example.com password joebloggs@example.com\n");
 }
 
 /* Admin */

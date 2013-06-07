@@ -388,7 +388,6 @@ class ProvisioningApi {
 		/* Convert to array of groups */
 		$ret = array();
 		foreach($entries as $properties) {
-			print_r($properties);
 			$ret[] = new Provisioning_Group($properties -> groupId, $properties -> groupName, $properties -> description, (isset($properties -> emailPermission) ? $properties -> emailPermission : null), $properties -> permissionPreset);
 		}
 		return $ret;
@@ -412,7 +411,6 @@ class ProvisioningApi {
 		$entries = $this -> get_xml_feed_entries_paginated("group/2.0/" . urlencode($domain));
 		$ret = array();
 		foreach($entries as $properties) {
-			print_r($properties);
 			$ret[] = new Provisioning_Group($properties -> groupId, $properties -> groupName, $properties -> description, (isset($properties -> emailPermission) ? $properties -> emailPermission : null), $properties -> permissionPreset);
 		}
 		return $ret;
@@ -631,7 +629,7 @@ class ProvisioningApi {
 			case '201':
 				return $this -> process_feed($responseTxt);
 			default:
-				throw new Exception("HTTP ".$info['http_code']." posting to ". $url);
+				throw new Exception("HTTP ".$info['http_code']." putting to ". $url);
 		}
 	}
 	
@@ -657,7 +655,7 @@ class ProvisioningApi {
 			case '200':
 				return true;
 			default:
-				throw new Exception("HTTP ".$info['http_code']." getting from ". $url);
+				throw new Exception("HTTP ".$info['http_code']." deleting ". $url);
 		}
 	}
 	

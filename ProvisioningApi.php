@@ -541,6 +541,8 @@ class ProvisioningApi {
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
 
+		curl_setopt($this -> ch, CURLOPT_POST, false); // Reset
+
 		switch($info['http_code']) {
 			case '200':
 			case '201':
@@ -560,7 +562,6 @@ class ProvisioningApi {
 		curl_setopt($this -> ch, CURLOPT_URL, $url);
 		curl_setopt($this -> ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($this -> ch, CURLOPT_HTTPHEADER, array('Authorization: GoogleLogin auth="'.trim($this -> token).'"'));
-		curl_setopt($this -> ch, CURLOPT_POST, false); // Reset
 		
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);

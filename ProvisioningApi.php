@@ -542,6 +542,7 @@ class ProvisioningApi {
 		$info = curl_getinfo($this -> ch);
 
 		curl_setopt($this -> ch, CURLOPT_POST, false); // Reset
+		curl_setopt($this -> ch, CURLOPT_POSTFIELDS, NULL);
 
 		switch($info['http_code']) {
 			case '200':
@@ -624,6 +625,7 @@ class ProvisioningApi {
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
 		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "GET"); // Reset
+		curl_setopt($this -> ch, CURLOPT_POSTFIELDS, NULL);
 	
 		switch($info['http_code']) {
 			case '200':

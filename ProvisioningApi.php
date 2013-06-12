@@ -61,9 +61,9 @@ class ProvisioningApi {
 		if(!function_exists('curl_init')) {
 			throw new Exception(__CLASS__ . " requires cURL extension to be loaded.");
 		}
-		$this -> ch = curl_init();
-		curl_setopt($this -> ch, CURLOPT_SSL_VERIFYPEER, 0);
-
+		
+		$this -> ch_init();
+		
 		/* If there is no token set, then figure it out */
 		if(!$token) {
 			$this -> login();
@@ -81,7 +81,7 @@ class ProvisioningApi {
 				$this -> login();
 			}
 		}
-		
+
 		/* This data is needed for Ou stuff, but it is mainly to verify the login has API access */
 		try {
 			$this -> retrieveCustomerId();
@@ -94,9 +94,33 @@ class ProvisioningApi {
 	 * Close resources
 	 */
 	function __destruct() {
+		$this -> ch_close();
+	}
+	
+	
+	/**
+	 * Init cURL handle
+	 */
+	private function ch_init() {
+		$this -> ch = curl_init();
+		curl_setopt($this -> ch, CURLOPT_SSL_VERIFYPEER, 0);
+	}
+
+	/**
+	 * Close cURL handle
+	 */
+	private function ch_close() {
 		curl_close($this -> ch);
 	}
 
+	/**
+	 * Make a new cURL handle, to be sure all options are reset correctly
+	 */
+	private function ch_reinit() {
+		$this -> ch_close();
+		$this -> ch_init();
+	}
+	
 	/**
 	 * Create a user for a domain
 	 * https://developers.google.com/google-apps/provisioning/#creating_a_user_for_a_domain
@@ -541,8 +565,7 @@ class ProvisioningApi {
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
 
-		curl_setopt($this -> ch, CURLOPT_POST, false); // Reset
-		curl_setopt($this -> ch, CURLOPT_POSTFIELDS, NULL);
+		$this -> ch_reinit(); // Reset everything
 
 		switch($info['http_code']) {
 			case '200':
@@ -624,8 +647,7 @@ class ProvisioningApi {
 	
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
-		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "GET"); // Reset
-		curl_setopt($this -> ch, CURLOPT_POSTFIELDS, NULL);
+		$this -> ch_reinit(); // Reset everything
 	
 		switch($info['http_code']) {
 			case '200':
@@ -652,7 +674,7 @@ class ProvisioningApi {
 		
 		$responseTxt = curl_exec($this -> ch);
 		$info = curl_getinfo($this -> ch);
-		curl_setopt($this -> ch, CURLOPT_CUSTOMREQUEST, "GET"); // Reset
+		$this -> ch_reinit(); // Reset everything
 
 		switch($info['http_code']) {
 			case '200':

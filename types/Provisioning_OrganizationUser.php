@@ -18,7 +18,7 @@ class Provisioning_OrganizationUser {
 	}
 	
 	public function getorgUnitPath() {
-		return $this -> orgUserEmail;
+		return $this -> orgUnitPath;
 	}
 	
 	public function setorgUnitPath($orgUnitPath) {

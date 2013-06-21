@@ -330,6 +330,14 @@ class ProvisioningApi {
 		$pe = new Provisioning_Email($groupEmail);
 		$dom = $this -> get_xml_feed("group/2.0/".urlencode($pe -> domain) . "/" . urlencode($groupEmail));
 		$properties = $this -> get_properties($dom);
+		
+		/* Filling with defaults if not sent along */
+		if(!isset($properties -> emailPermission)) {
+			$properties -> emailPermission == "Domain";
+		}
+		if(!isset($properties -> permissionPreset)) {
+			$properties -> permissionPreset == "TeamDomain";
+		}
 		return new Provisioning_Group($properties -> groupId, $properties -> groupName, $properties -> description, $properties -> emailPermission, $properties -> permissionPreset);
 	}
 	

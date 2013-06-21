@@ -332,10 +332,10 @@ class ProvisioningApi {
 		$properties = $this -> get_properties($dom);
 		
 		/* Filling with defaults if not sent along */
-		if(!isset($properties -> emailPermission)) {
+		if(!property_exists($properties, 'emailPermission')) {
 			$properties -> emailPermission == "Domain";
 		}
-		if(!isset($properties -> permissionPreset)) {
+		if(!property_exists($properties, 'permissionPreset')) {
 			$properties -> permissionPreset == "TeamDomain";
 		}
 		return new Provisioning_Group($properties -> groupId, $properties -> groupName, $properties -> description, $properties -> emailPermission, $properties -> permissionPreset);

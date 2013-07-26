@@ -487,7 +487,7 @@ class ProvisioningApi {
 	 */
 	public function updateOrganizationUser(Provisioning_OrganizationUser $orgUser) {
 		$xml = $orgUser -> modifyXML();
-		$dom = $this -> put_xml_feed("orguser/2.0/".urlencode($this -> customerId) . "/" . $orgUser -> getorgUnitPath(), $xml);
+		$dom = $this -> put_xml_feed("orguser/2.0/".urlencode($this -> customerId) . "/" . $orgUser -> getorgUserEmail(), $xml);
 		return $orgUser;
 	}
 

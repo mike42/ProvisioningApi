@@ -4,7 +4,7 @@
 
 require_once("../ProvisioningApi.php");
 
-if(count($argv) < 4) {
+if(count($argv) < 5) {
 	die("Usage: ". $argv[0] . " admin@example.com password joebloggs@example.com path/to/orgunit\n");
 }
 

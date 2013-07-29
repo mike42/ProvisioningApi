@@ -37,6 +37,11 @@ class ProvisioningApi {
 	 * @var int cURL handle for requests.
 	 */
 	private $ch;
+
+	/**
+	 * @var ssl_verifypeer set to true to verify SSL certificates (the default)
+     */
+	private $ssl_verifypeer;
 	
 	/**
 	 * @var string Base URL for API requests.
@@ -50,13 +55,14 @@ class ProvisioningApi {
 	 * @param string $password The password to log in with
 	 * @param string $token If you've got it, an old login token -- The login process can be skipped 
 	 */
-	function __construct($username = null, $password = null, $token = false) {
+	function __construct($username = null, $password = null, $token = false, $ssl_verifypeer = true) {
 		if($username == null || $password == null) {
 			throw new Exception("Username and password are required.");
 		}
 
 		$this -> username = $username;
 		$this -> password = $password;
+		$this -> ssl_verifypeer = $ssl_verifypeer;
 		
 		if(!function_exists('curl_init')) {
 			throw new Exception(__CLASS__ . " requires cURL extension to be loaded.");
@@ -103,7 +109,11 @@ class ProvisioningApi {
 	 */
 	private function ch_init() {
 		$this -> ch = curl_init();
-		curl_setopt($this -> ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+		if(!$this -> ssl_verifypeer) {
+			/* Throw security out the window if this option is enabled*/
+			curl_setopt($this -> ch, CURLOPT_SSL_VERIFYPEER, 0);
+		}
 	}
 
 	/**
